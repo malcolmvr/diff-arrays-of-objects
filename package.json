@@ -1,0 +1,53 @@
+{
+  "name": "diff-arrays-of-objects",
+  "description": "Compare two arrays of objects, finding added, removed, updated and identical objects.",
+  "homepage": "https://github.com/malcolmvr/diff-arrays-of-objects",
+  "version": "1.0.0",
+  "main": "lib",
+  "author": {
+    "email": "malcolm@van.raalte.ca",
+    "name": "Malcolm van Raalte",
+    "url": "https://github.com/malcolmvr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malcolmvr/diff-arrays-of-objects.git"
+  },
+  "bugs": {
+    "url": "https://github.com/malcolmvr/diff-arrays-of-objects/issues"
+  },
+  "keywords": [
+    "added",
+    "array",
+    "compare",
+    "deep",
+    "delta",
+    "diff",
+    "difference",
+    "object",
+    "removed",
+    "updated",
+    "objects"
+  ],
+  "dependencies": {
+    "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "mocha": "latest",
+    "should": "latest"
+  },
+  "engines": {
+    "node": ">= 8"
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "lint": "./node_modules/.bin/eslint ./lib",
+    "pretest": "npm run lint",
+    "test": "./node_modules/.bin/mocha"
+  }
+}
