@@ -100,6 +100,7 @@ const result = diff (first, second, idField, { updatedValues: diff.updatedValues
 
 const result = diff (first, second, idField, { updatedValues: diff.updatedValues.both });
 // result.updated is [{ id: 1, letter: 'a' }, { id: 1, letter: 'b' }]
+```
 
 ## License
 
