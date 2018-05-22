@@ -63,6 +63,21 @@ describe('diff-arrays-of-objects', function () {
     should(results.same).be.eql([]);
   });
 
+  it('just one updated; updatedValues.bothWithDeepDiff', function () {
+    const first = [{ id: 1, details: { letter: 'a' } }];
+    const second = [{ id: 1, details: { letter: 'b' } }];
+    const results = diff(first, second, 'id', { updatedValues: diff.updatedValues.bothWithDeepDiff });
+    should(results.added).be.eql([]);
+    should(results.removed).be.eql([]);
+    should(results.updated[0][0]).be.eql({ id: 1, details: { letter: 'a' } });
+    should(results.updated[0][1]).be.eql({ id: 1, details: { letter: 'b' } });
+    should(results.updated[0][2][0].kind).be.eql('E');
+    should(results.updated[0][2][0].path).be.eql(['details', 'letter']);
+    should(results.updated[0][2][0].lhs).be.eql('a');
+    should(results.updated[0][2][0].rhs).be.eql('b');
+    should(results.same).be.eql([]);
+  });
+
   it('two of each', function () {
     const first = [
       { id: 3, letter: 'a' },

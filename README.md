@@ -1,6 +1,6 @@
 # diff-arrays-of-objects
 
-> Compare two arrays of objects, finding added, removed, updated and identical objects.
+> Compare two arrays of objects, finding added, removed, updated and identical objects. Details the differences between updated objects.
 
 ## Install
 
@@ -82,6 +82,7 @@ Type: `object`
                           // diff.updatedValues.first (1): the value from the first array
                           // diff.updatedValues.second (2): the value from the second array (default)
                           // diff.updatedValues.both (3): both values, as an array [first, second]
+                          // diff.updatedValues.bothWithDeepDiff (4): both value, plus the results of the [deep-diff](https://github.com/flitbit/diff) module; [first, second, deep-diff]
 }
 ```
 
@@ -100,6 +101,10 @@ const result = diff (first, second, idField, { updatedValues: diff.updatedValues
 
 const result = diff (first, second, idField, { updatedValues: diff.updatedValues.both });
 // result.updated is [{ id: 1, letter: 'a' }, { id: 1, letter: 'b' }]
+
+const result = diff (first, second, idField, { updatedValues: diff.updatedValues.bothWithDeepDiff });
+// result.updated is [{ id: 1, letter: 'a' }, { id: 1, letter: 'b' }, { kind: 'E', path: ['letter'], lhs: 'a', rhs: 'b' }]
+// see https://github.com/flitbit/diff for more info on dee-diff results
 ```
 
 ## License
