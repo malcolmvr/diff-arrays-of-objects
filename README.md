@@ -67,7 +67,7 @@ Second array to be compared.
 #### idField
 
 *Required*<br>
-Type: `array`
+Type: `string`
 
 The id field that is used to compare the arrays. Defaults to 'id'.
 
