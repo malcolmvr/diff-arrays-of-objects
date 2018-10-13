@@ -9,6 +9,13 @@
     "name": "Malcolm van Raalte",
     "url": "https://github.com/malcolmvr"
   },
+  "contributors": [
+    {
+      "email": "victorfern91@gmail.com",
+      "name": "Victor Fernandes",
+      "url": "https://victorfern91.github.io"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/malcolmvr/diff-arrays-of-objects.git"
@@ -35,7 +42,9 @@
   },
   "devDependencies": {
     "eslint": "latest",
+    "expect.js": "latest",
     "mocha": "latest",
+    "nyc": "latest",
     "should": "latest"
   },
   "engines": {
@@ -47,8 +56,8 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf node_modules",
-    "lint": "./node_modules/.bin/eslint ./lib",
+    "lint": "eslint ./lib",
     "pretest": "npm run lint",
-    "test": "./node_modules/.bin/mocha"
+    "test": "nyc --reporter=html --reporter=text mocha"
   }
 }
