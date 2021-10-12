@@ -52,4 +52,10 @@ describe('diff-arrays-of-objects', function () {
       diff(first, second, 'id', { compareFunction: -1 });
     }).to.throwError();
   });
+
+  it('should use all the default parameter values', () => {
+    expect(() => {
+      diff();
+    }).not.to.throwError();
+  });
 });
