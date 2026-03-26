@@ -1,0 +1,11 @@
+{
+    "reporter": "spec",
+    "timeout": 120000,
+    "slow": 300,
+    "bail": true,
+    "recursive": true,
+    "require": [
+        "should"
+    ],
+    "extension": ["js"]
+}
