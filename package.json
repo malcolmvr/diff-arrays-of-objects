@@ -43,7 +43,7 @@
   "devDependencies": {
     "eslint": "latest",
     "expect.js": "latest",
-    "mocha": "latest",
+    "mocha": "^11.3.0",
     "nyc": "latest",
     "should": "latest"
   },
