@@ -59,5 +59,9 @@
     "lint": "eslint ./lib",
     "pretest": "npm run lint",
     "test": "nyc --reporter=html --reporter=text mocha"
+  },
+  "overrides": {
+    "diff": "^9.0.0",
+    "serialize-javascript": "^7.1.0"
   }
 }
