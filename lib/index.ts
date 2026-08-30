@@ -1,4 +1,6 @@
-import { classify, findRemoved, formatUpdated, indexById } from './classify';
+import { classify } from './classify';
+import { formatUpdated } from './format-updated';
+import { findRemoved, indexById } from './identity';
 import { DEFAULT_ID_FIELD, resolveOptions } from './resolve-options';
 import { DiffResult, Options, UpdatedValues } from './types';
 
@@ -35,12 +37,13 @@ function diff<T> (
   } as DiffResult<T>;
 }
 
-// eslint-disable-next-line no-redeclare
-namespace diff {
-  export const updatedValues = UpdatedValues;
-}
+// Object.assign keeps the enum available on the callable default export without
+// the unreachable fallback branch emitted by TypeScript namespace merging.
+const diffWithUpdatedValues = Object.assign(diff, {
+  updatedValues: UpdatedValues,
+});
 
-export default diff;
-module.exports = diff;
-module.exports.default = diff;
+export default diffWithUpdatedValues;
+module.exports = diffWithUpdatedValues;
+module.exports.default = diffWithUpdatedValues;
 module.exports.updatedValues = UpdatedValues;

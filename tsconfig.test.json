@@ -2,8 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
   },
   "include": ["lib/**/*.ts", "test/**/*.ts"],
-  "exclude": ["lib/deep-diff.ts", "test/deep-diff.spec.ts"]
+  "exclude": ["test/deep-diff.spec.ts"]
 }

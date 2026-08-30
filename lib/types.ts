@@ -1,4 +1,4 @@
-import type { Diff } from './deep-diff-types';
+import type { Diff } from './deep-diff/types';
 
 /** How the `updated` array should be populated. */
 // eslint-disable-next-line no-shadow

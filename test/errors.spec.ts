@@ -38,9 +38,11 @@ describe('diff-arrays-of-objects', function () {
     const first = [{ id: 1, letter: 'a' }];
     const second = [{ id: 1, letter: 'b' }];
     expect(() => {
+      // @ts-expect-error Exercising runtime validation with an invalid enum.
       diff(first, second, 'id', { updatedValues: -1 });
     }).to.throwError();
     expect(() => {
+      // @ts-expect-error Exercising runtime validation with an invalid enum.
       diff(first, second, 'id', { updatedValues: 10 });
     }).to.throwError();
   });
@@ -49,6 +51,7 @@ describe('diff-arrays-of-objects', function () {
     expect(() => {
       const first = [{ id: 1, letter: 'a' }];
       const second = [{ id: 1, letter: 'b' }];
+      // @ts-expect-error Exercising runtime validation with a non-function.
       diff(first, second, 'id', { compareFunction: -1 });
     }).to.throwError();
   });

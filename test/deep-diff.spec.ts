@@ -206,20 +206,23 @@ let deep = deepDiff;
 
 
     describe('can revert namespace using noConflict', function () {
-      if (deep.noConflict) {
-        deep = deep.noConflict();
-
-        it('conflict is restored (when applicable)', function () {
-          // In node there is no global conflict.
-          if (typeof globalConflict !== 'undefined') {
-            expect(DeepDiff).to.be(deep); // eslint-disable-line no-undef
-          }
-        });
-
-        it('DeepDiff functionality available through result of noConflict()', function () {
-          expect(deep.applyDiff).to.be.a('function');
-        });
+      if (!deep.noConflict) {
+        it.skip('is unavailable in the vendored module build', function () {});
+        return;
       }
+
+      deep = deep.noConflict();
+
+      it('conflict is restored (when applicable)', function () {
+        // In node there is no global conflict.
+        if (typeof globalConflict !== 'undefined') {
+          expect(DeepDiff).to.be(deep); // eslint-disable-line no-undef
+        }
+      });
+
+      it('DeepDiff functionality available through result of noConflict()', function () {
+        expect(deep.applyDiff).to.be.a('function');
+      });
     });
 
 
@@ -414,12 +417,8 @@ let deep = deepDiff;
         expect(diff.length).to.be(6);
 
         it('differences can be applied', function () {
-          var applied = deep.applyDiff(lhs, rhs);
-
-          it('and the result equals the rhs', function () {
-            expect(applied).to.eql(rhs);
-          });
-
+          deep.applyDiff(lhs, rhs);
+          expect(lhs).to.eql(rhs);
         });
       });
 
@@ -441,7 +440,10 @@ let deep = deepDiff;
     });
 
     describe('Objects from different frames', function () {
-      if (typeof globalConflict === 'undefined') { return; }
+      if (typeof globalConflict === 'undefined') {
+        it.skip('requires a browser frame', function () {});
+        return;
+      }
 
       // eslint-disable-next-line no-undef
       var frame = document.createElement('iframe');
