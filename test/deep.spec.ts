@@ -1,5 +1,5 @@
-const should = require('should');
-const diff = require('../lib');
+import should from 'should';
+import diff from '../lib';
 
 describe('deep diff', function () {
   it('just one the same', function () {
@@ -88,3 +88,5 @@ describe('deep diff', function () {
 
 
 });
+
+export {};

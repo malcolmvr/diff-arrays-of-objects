@@ -1,5 +1,5 @@
-const diff = require('../lib');
-const expect = require('expect.js');
+import diff from '../lib';
+import expect from 'expect.js';
 
 describe('diff-arrays-of-objects', function () {
   it('should send an error when the first array is not an array', () => {
@@ -59,3 +59,5 @@ describe('diff-arrays-of-objects', function () {
     }).not.to.throwError();
   });
 });
+
+export {};

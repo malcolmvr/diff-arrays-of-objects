@@ -1,4 +1,5 @@
 {
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 9,
     "sourceType": "module"
@@ -6,7 +7,7 @@
   "env": {
     "browser": false,
     "node": true,
-    "mocha": true,
+    "jest": true,
     "es6": true
   },
   "rules": {

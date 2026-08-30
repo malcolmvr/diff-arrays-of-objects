@@ -1,5 +1,5 @@
-const should = require('should');
-const diff = require('../lib');
+import should from 'should';
+import diff from '../lib';
 
 describe('custom compare function', function () {
   it('should be able to use a custom compare function', function () {
@@ -15,3 +15,5 @@ describe('custom compare function', function () {
     should(results.same).be.deepEqual([{ id: 1, letter: 'a', ignored: 'y' }]);
   });
 });
+
+export {};

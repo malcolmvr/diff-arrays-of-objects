@@ -3,8 +3,8 @@
   "description": "Compare two arrays of objects, finding added, removed, updated and identical objects. Details the differences between updated objects.",
   "homepage": "https://github.com/malcolmvr/diff-arrays-of-objects",
   "version": "1.1.9",
-  "main": "lib",
-  "types": "lib",
+  "main": "dist",
+  "types": "dist/index.d.ts",
   "author": {
     "email": "malcolm@van.raalte.ca",
     "name": "Malcolm van Raalte",
@@ -38,27 +38,34 @@
     "objects"
   ],
   "dependencies": {
-    "deep-diff": "^1.0.2",
-    "lodash": "4"
+    "lodash": "^4.18.1"
   },
   "devDependencies": {
-    "eslint": "latest",
-    "expect.js": "latest",
-    "mocha": "latest",
-    "nyc": "latest",
-    "should": "latest"
+    "@types/lodash": "^4.17.25",
+    "@types/node": "^26.3.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^8.57.0",
+    "expect.js": "^0.3.1",
+    "should": "^13.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.0"
   },
   "engines": {
     "node": ">= 8"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "license": "MIT",
   "scripts": {
-    "clean": "rm -rf node_modules",
-    "lint": "eslint ./lib",
-    "pretest": "npm run lint",
-    "test": "nyc --reporter=html --reporter=text mocha"
+    "clean": "pnpm dlx rimraf node_modules",
+    "build": "tsc",
+    "lint": "eslint ./lib --ext .ts",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "pretest": "pnpm run lint && pnpm run typecheck && pnpm run build",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run --coverage"
   }
 }

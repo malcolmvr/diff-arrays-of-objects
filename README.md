@@ -10,7 +10,7 @@ $ npm install diff-arrays-of-objects --save
 ## Usage
 
 ```js
-const diff = require('diff-arrays-of-objects');
+import diff from 'diff-arrays-of-objects';
 var result = diff(
   [
     {id: 1, name: 'a'},
@@ -89,7 +89,7 @@ Type: `object`
 Examples:
 
 ```js
-const diff = require('diff-arrays-of-objects');
+import diff from 'diff-arrays-of-objects';
 const first = [{ id: 1, letter: 'a' }];
 const second = [{ id: 1, letter: 'b' }];
 
