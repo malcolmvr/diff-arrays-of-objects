@@ -27,7 +27,7 @@ export function getOrderIndependentHash (object: any) {
 
   if (type === 'object') {
     for (var key in object) {
-      if (object.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
         var keyValueString = '[ type: object, key: ' + key + ', value hash: ' + getOrderIndependentHash(object[key]) + ']';
         accum += hashThisString(keyValueString);
       }

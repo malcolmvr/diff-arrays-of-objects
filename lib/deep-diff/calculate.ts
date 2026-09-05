@@ -46,12 +46,12 @@ export function deepDiff (
   var rtype = typeof rhs;
   var i, j, k, other;
 
-  var ldefined = ltype !== 'undefined' ||
-    (stack && (stack.length > 0) && stack[stack.length - 1].lhs &&
-      Object.getOwnPropertyDescriptor(stack[stack.length - 1].lhs, key));
-  var rdefined = rtype !== 'undefined' ||
-    (stack && (stack.length > 0) && stack[stack.length - 1].rhs &&
-      Object.getOwnPropertyDescriptor(stack[stack.length - 1].rhs, key));
+  var ldefined = ltype !== 'undefined'
+    || (stack && (stack.length > 0) && stack[stack.length - 1].lhs
+      && Object.getOwnPropertyDescriptor(stack[stack.length - 1].lhs, key));
+  var rdefined = rtype !== 'undefined'
+    || (stack && (stack.length > 0) && stack[stack.length - 1].rhs
+      && Object.getOwnPropertyDescriptor(stack[stack.length - 1].rhs, key));
 
   if (!ldefined && rdefined) {
     changes.push(new DiffNew(currentPath, rhs));

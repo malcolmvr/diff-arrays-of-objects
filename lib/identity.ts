@@ -10,7 +10,7 @@ export function indexById<T> (
   items: readonly T[],
   idField: string,
 ): Record<string, T> {
-  return keyBy(items, getId<T>(idField)) as Record<string, T>;
+  return keyBy(items, getId<T>(idField));
 }
 
 /** Computes the items in `first` whose ids are absent from `second`. */

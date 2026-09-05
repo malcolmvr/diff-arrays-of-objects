@@ -1,6 +1,5 @@
 import { isArray, isEqual, isFunction, isObject, isString } from 'lodash';
 import {
-  CompareFunction,
   Options,
   ResolvedOptions,
   UpdatedValues,

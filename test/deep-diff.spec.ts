@@ -40,7 +40,7 @@ let deep = deepDiff;
             if (lhsTuple[0] === rhsTuple[0]) {
               return;
             }
-            it('shows differences when comparing ' + lhsTuple[0] + ' to ' + rhsTuple[0], function () {
+            it(`shows differences when comparing ${JSON.stringify(lhsTuple[0])} to ${JSON.stringify(rhsTuple[0])}`, function () {
               const diff = deep.diff(lhsTuple[1], rhsTuple[1]);
               expect(diff).toBeTruthy();
               expect(diff.length).toBe(1);
@@ -217,7 +217,7 @@ let deep = deepDiff;
       it('conflict is restored (when applicable)', function () {
         // In node there is no global conflict.
         if (typeof globalConflict !== 'undefined') {
-          expect(DeepDiff).toBe(deep); // eslint-disable-line no-undef
+          expect(DeepDiff).toBe(deep);
         }
       });
 
@@ -432,8 +432,8 @@ let deep = deepDiff;
       it('can apply diffs between two top level arrays', function () {
         const differences = deep.diff(lhs, rhs);
 
-        differences.forEach(function (it) {
-          deep.applyChange(lhs, true, it);
+        differences.forEach(function (difference) {
+          deep.applyChange(lhs, true, difference);
         });
 
         expect(lhs).toEqual(['a']);
@@ -446,9 +446,7 @@ let deep = deepDiff;
         return;
       }
 
-      // eslint-disable-next-line no-undef
       const frame = document.createElement('iframe');
-      // eslint-disable-next-line no-undef
       document.body.appendChild(frame);
 
       const lhs = new frame.contentWindow.Date(2010, 1, 1);

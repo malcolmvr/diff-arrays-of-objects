@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.test.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "rootDir": "."
+  },
+  "include": [
+    "lib/**/*.ts",
+    "test/**/*.ts",
+    "*.ts",
+    "*.mjs"
+  ],
+  "exclude": ["node_modules", "dist", "coverage"]
+}

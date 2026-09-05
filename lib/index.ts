@@ -17,7 +17,7 @@ function diff<T> (
   options: Options<T> = {},
 ): DiffResult<T> {
   const opts = resolveOptions<T>(first, second, idField, options);
-  const key = idField as string;
+  const key: string = idField;
 
   const firstIndex = indexById(first, key);
   const classified = classify(second, firstIndex, key, opts.compareFunction);

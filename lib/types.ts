@@ -1,7 +1,6 @@
 import type { Diff } from './deep-diff/types';
 
 /** How the `updated` array should be populated. */
-// eslint-disable-next-line no-shadow
 export enum UpdatedValues {
   first = 1,
   second = 2,
