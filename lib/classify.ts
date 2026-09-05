@@ -11,15 +11,15 @@ export interface Classification<T> {
  * Classifies every object in `second` as added, same or updated,
  * relative to the objects indexed from `first`.
  */
-export function classify<T> (
+export function classify<T extends object> (
   second: readonly T[],
   firstIndex: Record<string, T>,
   idField: string,
   compareFunction: (a: T, b: T) => boolean,
 ): Classification<T> {
   const groupingFunction = (o2: T): string => {
-    const o1 = firstIndex[String(getId<T>(idField)(o2))];
-    if (!o1) return 'added';
+    const o1 = firstIndex[String(getId(idField)(o2))];
+    if (o1 === undefined) return 'added';
     if (compareFunction(o1, o2)) return 'same';
     return 'updated';
   };

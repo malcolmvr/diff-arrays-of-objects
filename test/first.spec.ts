@@ -15,7 +15,7 @@ describe('first', function () {
 
   it('just one removed', function () {
     const first = [{ id: 1, letter: 'a' }];
-    const second = [];
+    const second: typeof first = [];
     const results = diff(first, second, 'id', { updatedValues: diff.updatedValues.first });
     expect(results.added).toEqual([]);
     expect(results.removed).toEqual([{ id: 1, letter: 'a' }]);
@@ -24,8 +24,8 @@ describe('first', function () {
   });
 
   it('just one added', function () {
-    const first = [];
     const second = [{ id: 1, letter: 'a' }];
+    const first: typeof second = [];
     const results = diff(first, second, 'id', { updatedValues: diff.updatedValues.first });
     expect(results.added).toEqual([{ id: 1, letter: 'a' }]);
     expect(results.removed).toEqual([]);

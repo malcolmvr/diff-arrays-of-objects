@@ -4,50 +4,52 @@ import {
   accumulateOrderIndependentDiff,
   observableDiff,
   orderIndependentDeepDiff,
+  PreFilter,
 } from './calculate';
+import { Diff } from './changes';
 import { getOrderIndependentHash } from './hash';
 
-Object.defineProperties(accumulateDiff, {
-  diff: {
-    value: accumulateDiff,
-    enumerable: true,
-  },
+export interface DeepDiffApi {
+  (
+    lhs: unknown,
+    rhs: unknown,
+    prefilter?: PreFilter,
+    accumulator?: Diff[],
+  ): Diff[] | undefined;
+  readonly diff: typeof accumulateDiff;
+  readonly orderIndependentDiff: typeof accumulateOrderIndependentDiff;
+  readonly observableDiff: typeof observableDiff;
+  readonly orderIndependentObservableDiff: typeof orderIndependentDeepDiff;
+  readonly orderIndepHash: typeof getOrderIndependentHash;
+  readonly applyDiff: typeof applyDiff;
+  readonly applyChange: typeof applyChange;
+  readonly revertChange: typeof revertChange;
+  readonly isConflict: () => boolean;
+  readonly DeepDiff: DeepDiffApi;
+}
+
+const deepDiff = accumulateDiff as unknown as DeepDiffApi;
+
+Object.defineProperties(deepDiff, {
+  diff: { value: accumulateDiff, enumerable: true },
   orderIndependentDiff: {
     value: accumulateOrderIndependentDiff,
     enumerable: true,
   },
-  observableDiff: {
-    value: observableDiff,
-    enumerable: true,
-  },
+  observableDiff: { value: observableDiff, enumerable: true },
   orderIndependentObservableDiff: {
     value: orderIndependentDeepDiff,
     enumerable: true,
   },
-  orderIndepHash: {
-    value: getOrderIndependentHash,
-    enumerable: true,
-  },
-  applyDiff: {
-    value: applyDiff,
-    enumerable: true,
-  },
-  applyChange: {
-    value: applyChange,
-    enumerable: true,
-  },
-  revertChange: {
-    value: revertChange,
-    enumerable: true,
-  },
+  orderIndepHash: { value: getOrderIndependentHash, enumerable: true },
+  applyDiff: { value: applyDiff, enumerable: true },
+  applyChange: { value: applyChange, enumerable: true },
+  revertChange: { value: revertChange, enumerable: true },
   isConflict: {
-    value: function () {
-      return typeof (globalThis as any).$conflict !== 'undefined';
-    },
+    value: () => '$conflict' in globalThis,
     enumerable: true,
   },
+  DeepDiff: { value: deepDiff, enumerable: true },
 });
 
-(accumulateDiff as any).DeepDiff = accumulateDiff;
-
-export default accumulateDiff as any;
+export default deepDiff;

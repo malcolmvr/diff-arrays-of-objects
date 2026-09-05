@@ -1,9 +1,30 @@
 import { isArray, isEqual, isFunction, isObject, isString } from 'lodash';
-import {
-  Options,
-  ResolvedOptions,
-  UpdatedValues,
-} from './types';
+
+/** Controls which values are returned for updated records. */
+export enum UpdatedValues {
+  first = 1,
+  second = 2,
+  both = 3,
+  bothWithDeepDiff = 4,
+}
+
+export type CompareFunction<T> = (value: T, other: T) => boolean;
+
+export interface Options<
+  T,
+  Mode extends UpdatedValues = UpdatedValues,
+> {
+  compareFunction?: CompareFunction<T>;
+  updatedValues?: Mode;
+}
+
+export interface ResolvedOptions<
+  T,
+  Mode extends UpdatedValues = UpdatedValues,
+> {
+  compareFunction: CompareFunction<T>;
+  updatedValues: Mode;
+}
 
 export const DEFAULT_ID_FIELD = 'id';
 
@@ -25,12 +46,12 @@ function fail (message: string): never {
  * Validates the arguments passed to `diff` and resolves the options,
  * filling in defaults for anything not specified.
  */
-export function resolveOptions<T> (
+export function resolveOptions<T, Mode extends UpdatedValues> (
   first: unknown,
   second: unknown,
   idField: unknown,
   options: unknown,
-): ResolvedOptions<T> {
+): ResolvedOptions<T, Mode> {
   if (!isArray(first)) {
     fail('"first" parameter must be an array but is not');
   }
@@ -44,10 +65,10 @@ export function resolveOptions<T> (
     fail('"options" parameter must be an object but is not');
   }
 
-  const opts: Options<T> = {
+  const opts = {
     compareFunction: isEqual,
     updatedValues: defaultUpdatedValues,
-    ...(options as Options<T>),
+    ...(options as Options<T, Mode>),
   };
 
   if (typeof opts.updatedValues !== 'number' || !updatedValuesSet.has(opts.updatedValues)) {
@@ -59,6 +80,6 @@ export function resolveOptions<T> (
 
   return {
     compareFunction: opts.compareFunction,
-    updatedValues: opts.updatedValues,
+    updatedValues: opts.updatedValues as Mode,
   };
 }

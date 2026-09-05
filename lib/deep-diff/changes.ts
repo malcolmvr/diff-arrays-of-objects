@@ -1,70 +1,71 @@
-export const validKinds = ['N', 'E', 'A', 'D'];
+export type PathSegment = string | number;
+export type DiffKind = 'N' | 'E' | 'A' | 'D';
 
-function inherits (ctor: any, superCtor: any) {
-  ctor.super_ = superCtor;
-  ctor.prototype = Object.create(superCtor.prototype, {
-    constructor: {
-      value: ctor,
-      enumerable: false,
-      writable: true,
-      configurable: true,
-    },
-  });
+interface Change<Kind extends DiffKind> {
+  readonly kind: Kind;
+  readonly path?: PathSegment[];
 }
 
-function Diff (kind: string, path: any) {
-  Object.defineProperty(this, 'kind', {
-    value: kind,
-    enumerable: true,
-  });
-  if (path && path.length) {
-    Object.defineProperty(this, 'path', {
-      value: path,
+function withPath<Kind extends DiffKind> (
+  change: Change<Kind>,
+  path?: readonly PathSegment[],
+): void {
+  if (path?.length) {
+    Object.defineProperty(change, 'path', {
+      value: [...path],
       enumerable: true,
     });
   }
 }
 
-export function DiffEdit (path: any, origin: any, value: any) {
-  (DiffEdit as any).super_.call(this, 'E', path);
-  Object.defineProperty(this, 'lhs', {
-    value: origin,
-    enumerable: true,
-  });
-  Object.defineProperty(this, 'rhs', {
-    value: value,
-    enumerable: true,
-  });
-}
-inherits(DiffEdit, Diff);
+export class DiffEdit<Lhs = unknown, Rhs = unknown> implements Change<'E'> {
+  readonly kind = 'E' as const;
+  readonly path?: PathSegment[];
+  readonly lhs: Lhs;
+  readonly rhs: Rhs;
 
-export function DiffNew (path: any, value: any) {
-  (DiffNew as any).super_.call(this, 'N', path);
-  Object.defineProperty(this, 'rhs', {
-    value: value,
-    enumerable: true,
-  });
+  constructor (path: readonly PathSegment[] | undefined, lhs: Lhs, rhs: Rhs) {
+    withPath(this, path);
+    this.lhs = lhs;
+    this.rhs = rhs;
+  }
 }
-inherits(DiffNew, Diff);
 
-export function DiffDeleted (path: any, value: any) {
-  (DiffDeleted as any).super_.call(this, 'D', path);
-  Object.defineProperty(this, 'lhs', {
-    value: value,
-    enumerable: true,
-  });
-}
-inherits(DiffDeleted, Diff);
+export class DiffNew<Rhs = unknown> implements Change<'N'> {
+  readonly kind = 'N' as const;
+  readonly path?: PathSegment[];
+  readonly rhs: Rhs;
 
-export function DiffArray (path: any, index: any, item: any) {
-  (DiffArray as any).super_.call(this, 'A', path);
-  Object.defineProperty(this, 'index', {
-    value: index,
-    enumerable: true,
-  });
-  Object.defineProperty(this, 'item', {
-    value: item,
-    enumerable: true,
-  });
+  constructor (path: readonly PathSegment[] | undefined, rhs: Rhs) {
+    withPath(this, path);
+    this.rhs = rhs;
+  }
 }
-inherits(DiffArray, Diff);
+
+export class DiffDeleted<Lhs = unknown> implements Change<'D'> {
+  readonly kind = 'D' as const;
+  readonly path?: PathSegment[];
+  readonly lhs: Lhs;
+
+  constructor (path: readonly PathSegment[] | undefined, lhs: Lhs) {
+    withPath(this, path);
+    this.lhs = lhs;
+  }
+}
+
+export class DiffArray implements Change<'A'> {
+  readonly kind = 'A' as const;
+  readonly path?: PathSegment[];
+
+  constructor (
+    path: readonly PathSegment[] | undefined,
+    readonly index: number,
+    readonly item: Diff,
+  ) {
+    withPath(this, path);
+  }
+}
+
+export type Diff = DiffEdit | DiffNew | DiffDeleted | DiffArray;
+
+export const validKinds: readonly DiffKind[] = ['N', 'E', 'A', 'D'];

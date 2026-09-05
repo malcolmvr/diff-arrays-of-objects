@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import deep from '../lib/deep-diff';
+import type { PreFilterObject } from '../lib/deep-diff/calculate';
 import { arrayRemove } from '../lib/deep-diff/utils';
 
 describe('deep-diff compatibility helpers', () => {
@@ -150,11 +151,59 @@ describe('deep-diff compatibility helpers', () => {
     deep.revertChange({}, true, {});
   });
 
+  it('ignores malformed paths and incompatible array targets', () => {
+    const missingKey = Array<string>(1);
+    const malformedApplyTarget = {
+      list: [1, { primitive: 1 }],
+    };
+
+    deep.applyChange(malformedApplyTarget, true, {
+      kind: 'E', path: [undefined, 'leaf'], rhs: true,
+    });
+    deep.applyChange(malformedApplyTarget, true, {
+      kind: 'A', path: ['list'], index: 0,
+      item: { kind: 'E', path: ['leaf'], lhs: false, rhs: true },
+    });
+    deep.applyChange(malformedApplyTarget, true, {
+      kind: 'A', path: ['list'], index: 1,
+      item: { kind: 'E', path: ['primitive', 'leaf'], lhs: false, rhs: true },
+    });
+    deep.applyChange(malformedApplyTarget, true, {
+      kind: 'A', path: ['list'], index: 1,
+      item: { kind: 'E', path: missingKey, lhs: false, rhs: true },
+    });
+
+    const malformedRevertTarget = {
+      list: [1, { value: true }],
+    };
+    deep.revertChange(malformedRevertTarget, true, {
+      kind: 'A', path: ['list'], index: 0,
+      item: { kind: 'E', path: ['leaf'], lhs: false, rhs: true },
+    });
+    deep.revertChange(malformedRevertTarget, true, {
+      kind: 'A', path: ['list'], index: 1,
+      item: { kind: 'E', path: [undefined, 'leaf'], lhs: false, rhs: true },
+    });
+    deep.revertChange(malformedRevertTarget, true, {
+      kind: 'A', path: ['list'], index: 1,
+      item: { kind: 'E', path: missingKey, lhs: false, rhs: true },
+    });
+    deep.revertChange(malformedRevertTarget, true, {
+      kind: 'E', path: [undefined, 'leaf'], lhs: false, rhs: true,
+    });
+    deep.revertChange([], true, {
+      kind: 'A', index: 0, item: { kind: 'N', rhs: true },
+    });
+
+    expect(malformedApplyTarget).toEqual({ list: [1, { primitive: 1 }] });
+    expect(malformedRevertTarget).toEqual({ list: [1, { value: true }] });
+  });
+
   it('applies a complete diff conditionally', () => {
     const target = { keep: 1, update: 1 };
     const source = { keep: 2, update: 2, added: true };
 
-    deep.applyDiff(target, source, (_target, _source, change) => change.path[0] !== 'keep');
+    deep.applyDiff(target, source, (_target, _source, change) => change.path?.[0] !== 'keep');
     expect(target).toEqual({ keep: 1, update: 2, added: true });
 
     deep.applyDiff(null, source);
@@ -162,7 +211,7 @@ describe('deep-diff compatibility helpers', () => {
   });
 
   it('supports object prefilters, normalizers, observers, and accumulators', () => {
-    const prefilter = {
+    const prefilter: PreFilterObject = {
       prefilter: (_path, key) => key === 'ignored',
       normalize: (_path, key, lhs, rhs) => key === 'name'
         ? [String(lhs).toLowerCase(), String(rhs).toLowerCase()]

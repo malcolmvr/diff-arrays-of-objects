@@ -1,181 +1,260 @@
-import { DiffArray, DiffDeleted, DiffEdit, DiffNew } from './changes';
+import { Diff, DiffArray, DiffDeleted, DiffEdit, DiffNew, PathSegment } from './changes';
 import { getOrderIndependentHash } from './hash';
 import { realTypeOf } from './utils';
 
-/** Recursively records structural differences between two values. */
-export function deepDiff (
-  lhs: any,
-  rhs: any,
-  changes: any,
-  prefilter: any,
-  path?: any,
-  key?: any,
-  stack?: any,
-  orderIndependent?: any,
-) {
-  changes = changes || [];
-  path = path || [];
-  stack = stack || [];
-  var currentPath = path.slice(0);
-  if (typeof key !== 'undefined' && key !== null) {
-    if (prefilter) {
-      if (typeof (prefilter) === 'function' && prefilter(currentPath, key)) {
-        return;
-      } else if (typeof (prefilter) === 'object') {
-        if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) {
-          return;
-        }
-        if (prefilter.normalize) {
-          var alt = prefilter.normalize(currentPath, key, lhs, rhs);
-          if (alt) {
-            lhs = alt[0];
-            rhs = alt[1];
-          }
-        }
-      }
-    }
+export type PreFilterFunction = (
+  path: readonly PathSegment[],
+  key: PathSegment,
+) => boolean;
+
+export interface PreFilterObject {
+  prefilter?: PreFilterFunction;
+  normalize?: (
+    path: readonly PathSegment[],
+    key: PathSegment,
+    lhs: unknown,
+    rhs: unknown,
+  ) => readonly [unknown, unknown] | undefined;
+}
+
+export type PreFilter = PreFilterFunction | PreFilterObject;
+export type Observer = (change: Diff) => void;
+
+interface StackEntry {
+  lhs: object;
+  rhs: object;
+}
+
+interface WalkOptions {
+  changes: Diff[];
+  prefilter: PreFilter | undefined;
+  path: PathSegment[];
+  stack: StackEntry[];
+  orderIndependent: boolean;
+}
+
+function ownsKey (value: object, key: PathSegment | undefined): boolean {
+  return key !== undefined
+    && Object.getOwnPropertyDescriptor(value, key) !== undefined;
+}
+
+function shouldSkip (
+  prefilter: PreFilter | undefined,
+  path: readonly PathSegment[],
+  key: PathSegment,
+): boolean {
+  if (typeof prefilter === 'function') return prefilter(path, key);
+  return prefilter?.prefilter?.(path, key) ?? false;
+}
+
+function normalize (
+  prefilter: PreFilter | undefined,
+  path: readonly PathSegment[],
+  key: PathSegment,
+  lhs: unknown,
+  rhs: unknown,
+): readonly [unknown, unknown] | undefined {
+  return typeof prefilter === 'object'
+    ? prefilter.normalize?.(path, key, lhs, rhs)
+    : undefined;
+}
+
+function compareArrays (
+  lhs: unknown[],
+  rhs: unknown[],
+  options: WalkOptions,
+): void {
+  if (options.orderIndependent) {
+    lhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+    rhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+  }
+
+  let rightIndex = rhs.length - 1;
+  let leftIndex = lhs.length - 1;
+  while (rightIndex > leftIndex) {
+    options.changes.push(new DiffArray(
+      options.path,
+      rightIndex,
+      new DiffNew(undefined, rhs[rightIndex--]),
+    ));
+  }
+  while (leftIndex > rightIndex) {
+    options.changes.push(new DiffArray(
+      options.path,
+      leftIndex,
+      new DiffDeleted(undefined, lhs[leftIndex--]),
+    ));
+  }
+  for (; rightIndex >= 0; rightIndex--) {
+    walk(lhs[rightIndex], rhs[rightIndex], {
+      ...options,
+      path: [...options.path],
+    }, rightIndex);
+  }
+}
+
+function compareObjects (
+  lhs: object,
+  rhs: object,
+  options: WalkOptions,
+): void {
+  const left = lhs as Record<string, unknown>;
+  const right = rhs as Record<string, unknown>;
+  const remainingRightKeys = new Set(Object.keys(right));
+
+  Object.keys(left).forEach((key) => {
+    walk(left[key], right[key], {
+      ...options,
+      path: [...options.path],
+    }, key);
+    remainingRightKeys.delete(key);
+  });
+
+  remainingRightKeys.forEach((key) => {
+    walk(undefined, right[key], {
+      ...options,
+      path: [...options.path],
+    }, key);
+  });
+}
+
+function walk (
+  initialLhs: unknown,
+  initialRhs: unknown,
+  options: WalkOptions,
+  key?: PathSegment,
+): void {
+  const currentPath = [...options.path];
+  let lhs = initialLhs;
+  let rhs = initialRhs;
+
+  if (key !== undefined) {
+    if (shouldSkip(options.prefilter, currentPath, key)) return;
+    const normalized = normalize(options.prefilter, currentPath, key, lhs, rhs);
+    if (normalized) [lhs, rhs] = normalized;
     currentPath.push(key);
   }
 
-  if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
+  if (lhs instanceof RegExp && rhs instanceof RegExp) {
     lhs = lhs.toString();
     rhs = rhs.toString();
   }
 
-  var ltype = typeof lhs;
-  var rtype = typeof rhs;
-  var i, j, k, other;
+  const parent = options.stack[options.stack.length - 1];
+  const leftDefined = lhs !== undefined
+    || (parent !== undefined && ownsKey(parent.lhs, key));
+  const rightDefined = rhs !== undefined
+    || (parent !== undefined && ownsKey(parent.rhs, key));
 
-  var ldefined = ltype !== 'undefined'
-    || (stack && (stack.length > 0) && stack[stack.length - 1].lhs
-      && Object.getOwnPropertyDescriptor(stack[stack.length - 1].lhs, key));
-  var rdefined = rtype !== 'undefined'
-    || (stack && (stack.length > 0) && stack[stack.length - 1].rhs
-      && Object.getOwnPropertyDescriptor(stack[stack.length - 1].rhs, key));
+  if (!leftDefined && rightDefined) {
+    options.changes.push(new DiffNew(currentPath, rhs));
+    return;
+  }
+  if (!rightDefined && leftDefined) {
+    options.changes.push(new DiffDeleted(currentPath, lhs));
+    return;
+  }
+  if (realTypeOf(lhs) !== realTypeOf(rhs)) {
+    options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+    return;
+  }
+  if (lhs instanceof Date && rhs instanceof Date) {
+    if (lhs.getTime() !== rhs.getTime()) {
+      options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+    }
+    return;
+  }
 
-  if (!ldefined && rdefined) {
-    changes.push(new DiffNew(currentPath, rhs));
-  } else if (!rdefined && ldefined) {
-    changes.push(new DiffDeleted(currentPath, lhs));
-  } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
-    changes.push(new DiffEdit(currentPath, lhs, rhs));
-  } else if (realTypeOf(lhs) === 'date' && (lhs - rhs) !== 0) {
-    changes.push(new DiffEdit(currentPath, lhs, rhs));
-  } else if (ltype === 'object' && lhs !== null && rhs !== null) {
-    for (i = stack.length - 1; i > -1; --i) {
-      if (stack[i].lhs === lhs) {
-        other = true;
-        break;
-      }
+  if (typeof lhs === 'object' && lhs !== null
+    && typeof rhs === 'object' && rhs !== null) {
+    const alreadyVisited = options.stack.some(entry => entry.lhs === lhs);
+    if (alreadyVisited) {
+      if (lhs !== rhs) options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+      return;
     }
-    if (!other) {
-      stack.push({ lhs: lhs, rhs: rhs });
-      if (Array.isArray(lhs)) {
-        if (orderIndependent) {
-          lhs.sort(function (a, b) {
-            return getOrderIndependentHash(a) - getOrderIndependentHash(b);
-          });
 
-          rhs.sort(function (a, b) {
-            return getOrderIndependentHash(a) - getOrderIndependentHash(b);
-          });
-        }
-        i = rhs.length - 1;
-        j = lhs.length - 1;
-        while (i > j) {
-          changes.push(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i--])));
-        }
-        while (j > i) {
-          changes.push(new DiffArray(currentPath, j, new DiffDeleted(undefined, lhs[j--])));
-        }
-        for (; i >= 0; --i) {
-          deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack, orderIndependent);
-        }
-      } else {
-        var akeys = Object.keys(lhs);
-        var pkeys = Object.keys(rhs);
-        for (i = 0; i < akeys.length; ++i) {
-          k = akeys[i];
-          other = pkeys.indexOf(k);
-          if (other >= 0) {
-            deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack, orderIndependent);
-            pkeys[other] = null;
-          } else {
-            deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack, orderIndependent);
-          }
-        }
-        for (i = 0; i < pkeys.length; ++i) {
-          k = pkeys[i];
-          if (k) {
-            deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack, orderIndependent);
-          }
-        }
-      }
-      stack.length = stack.length - 1;
-    } else if (lhs !== rhs) {
-      changes.push(new DiffEdit(currentPath, lhs, rhs));
+    const nestedOptions = {
+      ...options,
+      path: currentPath,
+      stack: [...options.stack, { lhs, rhs }],
+    };
+    if (Array.isArray(lhs) && Array.isArray(rhs)) {
+      compareArrays(lhs, rhs, nestedOptions);
+    } else {
+      compareObjects(lhs, rhs, nestedOptions);
     }
-  } else if (lhs !== rhs) {
-    if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
-      changes.push(new DiffEdit(currentPath, lhs, rhs));
-    }
+    return;
+  }
+
+  if (lhs !== rhs && !(typeof lhs === 'number' && Number.isNaN(lhs)
+    && typeof rhs === 'number' && Number.isNaN(rhs))) {
+    options.changes.push(new DiffEdit(currentPath, lhs, rhs));
   }
 }
 
+/** Recursively records structural differences between two values. */
+export function deepDiff (
+  lhs: unknown,
+  rhs: unknown,
+  changes: Diff[] = [],
+  prefilter?: PreFilter,
+  path: PathSegment[] = [],
+  key?: PathSegment,
+  stack: StackEntry[] = [],
+  orderIndependent = false,
+): void {
+  walk(lhs, rhs, { changes, prefilter, path, stack, orderIndependent }, key);
+}
+
 export function observableDiff (
-  lhs: any,
-  rhs: any,
-  observer: any,
-  prefilter: any,
-  orderIndependent?: any,
-) {
-  var changes = [];
-  deepDiff(lhs, rhs, changes, prefilter, null, null, null, orderIndependent);
-  if (observer) {
-    for (var i = 0; i < changes.length; ++i) {
-      observer(changes[i]);
-    }
-  }
+  lhs: unknown,
+  rhs: unknown,
+  observer?: Observer,
+  prefilter?: PreFilter,
+  orderIndependent = false,
+): Diff[] {
+  const changes: Diff[] = [];
+  deepDiff(lhs, rhs, changes, prefilter, [], undefined, [], orderIndependent);
+  changes.forEach(change => observer?.(change));
   return changes;
 }
 
 export function orderIndependentDeepDiff (
-  lhs: any,
-  rhs: any,
-  changes: any,
-  prefilter: any,
-  path: any,
-  key: any,
-  stack: any,
-) {
-  return deepDiff(lhs, rhs, changes, prefilter, path, key, stack, true);
+  lhs: unknown,
+  rhs: unknown,
+  changes: Diff[] = [],
+  prefilter?: PreFilter,
+  path: PathSegment[] = [],
+  key?: PathSegment,
+  stack: StackEntry[] = [],
+): void {
+  deepDiff(lhs, rhs, changes, prefilter, path, key, stack, true);
 }
 
-export function accumulateDiff (lhs: any, rhs: any, prefilter: any, accum: any) {
-  var observer = (accum)
-    ? function (difference) {
-      if (difference) {
-        accum.push(difference);
-      }
-    }
-    : undefined;
-  var changes = observableDiff(lhs, rhs, observer, prefilter);
-  return (accum) ? accum : (changes.length) ? changes : undefined;
+export function accumulateDiff (
+  lhs: unknown,
+  rhs: unknown,
+  prefilter?: PreFilter,
+  accumulator?: Diff[],
+): Diff[] | undefined {
+  const changes = observableDiff(lhs, rhs, undefined, prefilter);
+  if (accumulator) {
+    accumulator.push(...changes);
+    return accumulator;
+  }
+  return changes.length ? changes : undefined;
 }
 
 export function accumulateOrderIndependentDiff (
-  lhs: any,
-  rhs: any,
-  prefilter: any,
-  accum: any,
-) {
-  var observer = (accum)
-    ? function (difference) {
-      if (difference) {
-        accum.push(difference);
-      }
-    }
-    : undefined;
-  var changes = observableDiff(lhs, rhs, observer, prefilter, true);
-  return (accum) ? accum : (changes.length) ? changes : undefined;
+  lhs: unknown,
+  rhs: unknown,
+  prefilter?: PreFilter,
+  accumulator?: Diff[],
+): Diff[] | undefined {
+  const changes = observableDiff(lhs, rhs, undefined, prefilter, true);
+  if (accumulator) {
+    accumulator.push(...changes);
+    return accumulator;
+  }
+  return changes.length ? changes : undefined;
 }

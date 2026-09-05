@@ -5,7 +5,7 @@ describe('custom compare function', function () {
   it('should be able to use a custom compare function', function () {
     const first = [{ id: 1, letter: 'a', ignored: 'x' }];
     const second = [{ id: 1, letter: 'a', ignored: 'y' }];
-    const compareFunction = (o1, o2) => {
+    const compareFunction = (o1: typeof first[number], o2: typeof first[number]) => {
       return o1.letter === o2.letter;
     };
     const results = diff(first, second, 'id', { compareFunction });

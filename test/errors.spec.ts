@@ -1,12 +1,12 @@
 import diff from '../lib';
 import { describe, expect, it } from 'vitest';
 
-
 describe('diff-arrays-of-objects', function () {
   it('should send an error when the first array is not an array', () => {
     expect(() => {
       const first = null;
       const second = [{ id: 1, letter: 'a' }];
+      // @ts-expect-error Exercising runtime validation with a null array.
       diff(first, second, 'id');
     }).toThrowError();
   });
@@ -15,6 +15,7 @@ describe('diff-arrays-of-objects', function () {
     expect(() => {
       const first = [{ id: 1, letter: 'a' }];
       const second = null;
+      // @ts-expect-error Exercising runtime validation with a null array.
       diff(first, second, 'id');
     }).toThrowError();
   });
@@ -23,6 +24,7 @@ describe('diff-arrays-of-objects', function () {
     expect(() => {
       const first = [{ id: 1, letter: 'a' }];
       const second = [{ id: 1, letter: 'b' }];
+      // @ts-expect-error Exercising runtime validation with a null key.
       diff(first, second, null);
     }).toThrowError();
   });
@@ -31,6 +33,7 @@ describe('diff-arrays-of-objects', function () {
     expect(() => {
       const first = [{ id: 1, letter: 'a' }];
       const second = [{ id: 1, letter: 'b' }];
+      // @ts-expect-error Exercising runtime validation with null options.
       diff(first, second, 'id', null);
     }).toThrowError();
   });

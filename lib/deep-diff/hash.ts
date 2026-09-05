@@ -1,40 +1,32 @@
 import { realTypeOf } from './utils';
 
-// http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-function hashThisString (string: any) {
-  var hash = 0;
-  for (var i = 0; i < string.length; i++) {
-    var char = string.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+function hashString (value: string): number {
+  let hash = 0;
+  for (let index = 0; index < value.length; index++) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(index);
+    hash &= hash;
   }
   return hash;
 }
 
-/** Gets an object hash independent of array and object key order. */
-export function getOrderIndependentHash (object: any) {
-  var accum = 0;
-  var type = realTypeOf(object);
+/** Gets a value hash independent of array and object key order. */
+export function getOrderIndependentHash (value: unknown): number {
+  const type = realTypeOf(value);
 
-  if (type === 'array') {
-    object.forEach(function (item) {
-      accum += getOrderIndependentHash(item);
-    });
-
-    var arrayString = '[type: array, hash: ' + accum + ']';
-    return accum + hashThisString(arrayString);
+  if (Array.isArray(value)) {
+    const sum = value.reduce(
+      (total, item) => total + getOrderIndependentHash(item),
+      0,
+    );
+    return sum + hashString(`[type: array, hash: ${sum}]`);
   }
 
-  if (type === 'object') {
-    for (var key in object) {
-      if (Object.prototype.hasOwnProperty.call(object, key)) {
-        var keyValueString = '[ type: object, key: ' + key + ', value hash: ' + getOrderIndependentHash(object[key]) + ']';
-        accum += hashThisString(keyValueString);
-      }
-    }
-    return accum;
+  if (typeof value === 'object' && value !== null) {
+    return Object.entries(value).reduce((total, [key, item]) => {
+      const description = `[ type: object, key: ${key}, value hash: ${getOrderIndependentHash(item)}]`;
+      return total + hashString(description);
+    }, 0);
   }
 
-  var stringToHash = '[ type: ' + type + ' ; value: ' + object + ']';
-  return accum + hashThisString(stringToHash);
+  return hashString(`[ type: ${type} ; value: ${String(value)}]`);
 }

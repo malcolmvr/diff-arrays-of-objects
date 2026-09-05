@@ -1,23 +1,51 @@
 import { classify } from './classify';
-import { formatUpdated } from './format-updated';
+import { formatUpdated, UpdatedEntry } from './format-updated';
 import { findRemoved, indexById } from './identity';
-import { DEFAULT_ID_FIELD, resolveOptions } from './resolve-options';
-import { DiffResult, Options, UpdatedValues } from './types';
+import {
+  DEFAULT_ID_FIELD,
+  Options,
+  resolveOptions,
+  UpdatedValues,
+} from './resolve-options';
 
-export * from './types';
+export {
+  CompareFunction,
+  Options,
+  ResolvedOptions,
+  UpdatedValues,
+} from './resolve-options';
+export type { Diff as DeepDiffChange } from './deep-diff/changes';
+
+export interface DiffResult<
+  T,
+  Mode extends UpdatedValues = UpdatedValues,
+> {
+  added: T[];
+  removed: T[];
+  same: T[];
+  updated: UpdatedEntry<T, Mode>[];
+}
+
+export type DiffResultBase<T> = Pick<DiffResult<T>, 'added' | 'removed' | 'same'>;
+export type DiffResultNormal<T> = DiffResult<T, UpdatedValues.first | UpdatedValues.second>;
+export type DiffResultBoth<T> = DiffResult<T, UpdatedValues.both>;
+export type DiffResultDeepDiff<T> = DiffResult<T, UpdatedValues.bothWithDeepDiff>;
 
 /**
  * Compare two arrays of objects, finding added, removed, updated and
  * identical objects. Details the differences between updated objects.
  */
-function diff<T> (
-  first: T[] = [],
-  second: T[] = [],
-  idField: keyof T & string | string = DEFAULT_ID_FIELD,
-  options: Options<T> = {},
-): DiffResult<T> {
-  const opts = resolveOptions<T>(first, second, idField, options);
-  const key: string = idField;
+function diff<
+  T extends object,
+  Mode extends UpdatedValues = UpdatedValues.second,
+> (
+  first: readonly T[] = [],
+  second: readonly T[] = [],
+  idField: keyof T & string = DEFAULT_ID_FIELD as keyof T & string,
+  options: Options<T, Mode> = {},
+): DiffResult<T, Mode> {
+  const opts = resolveOptions<T, Mode>(first, second, idField, options);
+  const key = idField;
 
   const firstIndex = indexById(first, key);
   const classified = classify(second, firstIndex, key, opts.compareFunction);
@@ -34,7 +62,7 @@ function diff<T> (
     same: classified.same,
     updated,
     removed,
-  } as DiffResult<T>;
+  };
 }
 
 // Object.assign keeps the enum available on the callable default export without

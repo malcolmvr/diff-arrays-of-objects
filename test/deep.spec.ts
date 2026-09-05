@@ -15,7 +15,7 @@ describe('deep diff', function () {
 
   it('just one removed', function () {
     const first = [{ id: 1, letter: 'a' }];
-    const second = [];
+    const second: typeof first = [];
     const results = diff(first, second, 'id', { updatedValues: diff.updatedValues.bothWithDeepDiff });
     expect(results.added).toEqual([]);
     expect(results.removed).toEqual([{ id: 1, letter: 'a' }]);
@@ -24,8 +24,8 @@ describe('deep diff', function () {
   });
 
   it('just one added', function () {
-    const first = [];
     const second = [{ id: 1, letter: 'a' }];
+    const first: typeof second = [];
     const results = diff(first, second, 'id', { updatedValues: diff.updatedValues.bothWithDeepDiff });
     expect(results.added).toEqual([{ id: 1, letter: 'a' }]);
     expect(results.removed).toEqual([]);
@@ -40,23 +40,20 @@ describe('deep diff', function () {
 
     expect(results.added).toEqual([]);
     expect(results.removed).toEqual([]);
-    expect(results.updated[0][0]).toEqual({ id: 1, details: { letter: 'a' } });
-    expect(results.updated[0][1]).toEqual({ id: 1, details: { letter: 'b' } });
-    if (results.updated[0][2] === undefined) {
-      throw new Error('received undefined from deep diff this should not happen');
-    }
+    const update = results.updated[0];
+    if (update === undefined) throw new Error('expected an updated item');
+    expect(update[0]).toEqual({ id: 1, details: { letter: 'a' } });
+    expect(update[1]).toEqual({ id: 1, details: { letter: 'b' } });
 
-    const deepDiff = results.updated[0][2][0];
-
-
-    if (deepDiff.kind !== 'E') {
+    const change = update[2][0];
+    if (change?.kind !== 'E') {
       throw new Error('received something else then then and edit return type');
     }
 
-    expect(deepDiff.kind).toEqual('E');
-    expect(deepDiff.path).toEqual(['details', 'letter']);
-    expect(deepDiff.lhs).toEqual('a');
-    expect(deepDiff.rhs).toEqual('b');
+    expect(change.kind).toEqual('E');
+    expect(change.path).toEqual(['details', 'letter']);
+    expect(change.lhs).toEqual('a');
+    expect(change.rhs).toEqual('b');
     expect(results.same).toEqual([]);
   });
 

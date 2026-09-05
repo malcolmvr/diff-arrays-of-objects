@@ -35,5 +35,13 @@ describe('edge cases', function () {
     expect(() => formatUpdated([], {}, 'id', 999 as UpdatedValues))
       .toThrowError(/without taking a branch/);
   });
-});
 
+  it('rejects updated records missing from the first-array index', function () {
+    const updated = [{ id: 1 }];
+
+    expect(() => formatUpdated(updated, {}, 'id', UpdatedValues.both))
+      .toThrowError(/absent from the first array/);
+    expect(() => formatUpdated(updated, {}, 'id', UpdatedValues.bothWithDeepDiff))
+      .toThrowError(/absent from the first array/);
+  });
+});

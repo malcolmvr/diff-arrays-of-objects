@@ -1,36 +1,60 @@
 import deepDiff from './deep-diff';
+import type { Diff } from './deep-diff/changes';
 import { getId } from './identity';
-import { DeepDiffChange, UpdatedValues } from './types';
+import { UpdatedValues } from './resolve-options';
+
+export type UpdatedEntry<T, Mode extends UpdatedValues> =
+  Mode extends UpdatedValues.both
+    ? [T, T]
+    : Mode extends UpdatedValues.bothWithDeepDiff
+      ? [T, T, Diff[]]
+      : T;
 
 /** Formats the `updated` array according to the chosen `UpdatedValues` mode. */
-export function formatUpdated<T> (
+export function formatUpdated<T extends object, Mode extends UpdatedValues> (
   updated: readonly T[],
   firstIndex: Record<string, T>,
   idField: string,
-  updatedValues: UpdatedValues,
-): T[] | [T, T][] | [T, T, DeepDiffChange[]][] {
+  updatedValues: Mode,
+): UpdatedEntry<T, Mode>[] {
+  let result: T[] | [T, T][] | [T, T, Diff[]][];
+
   switch (updatedValues) {
     case UpdatedValues.first:
-      return updated.map(u => firstIndex[String(getId<T>(idField)(u))]);
+      result = updated
+        .map(item => firstIndex[String(getId(idField)(item))])
+        .filter((item): item is T => item !== undefined);
+      break;
 
     case UpdatedValues.second:
-      return [...updated];
+      result = [...updated];
+      break;
 
     case UpdatedValues.both:
-      return updated.map(
-        u => [firstIndex[String(getId<T>(idField)(u))], u] as [T, T],
-      );
+      result = updated.map((item) => {
+        const original = firstIndex[String(getId(idField)(item))];
+        if (original === undefined) {
+          throw new Error('updated item is absent from the first array');
+        }
+        return [original, item] as [T, T];
+      });
+      break;
 
     case UpdatedValues.bothWithDeepDiff:
-      return updated.map((u) => {
-        const firstItem = firstIndex[String(getId<T>(idField)(u))];
-        const deepDiffResult = deepDiff(firstItem, u) ?? [];
-        return [firstItem, u, deepDiffResult] as [T, T, DeepDiffChange[]];
+      result = updated.map((item) => {
+        const original = firstIndex[String(getId(idField)(item))];
+        if (original === undefined) {
+          throw new Error('updated item is absent from the first array');
+        }
+        return [original, item, deepDiff(original, item) ?? []] as [T, T, Diff[]];
       });
+      break;
 
     default:
       throw new Error(
         'diff-arrays-of-objects error: reached the end of the UpdatedValues switch statement without taking a branch',
       );
   }
+
+  return result as UpdatedEntry<T, Mode>[];
 }

@@ -108,6 +108,34 @@ const result = diff (first, second, idField, { updatedValues: diff.updatedValues
 
 See [deep-diff](https://github.com/flitbit/diff) for more info on deep-diff results
 
+## TypeScript
+
+The item type is inferred from the input arrays. The type of `updated` is also
+inferred from `updatedValues`:
+
+```ts
+import diff from 'diff-arrays-of-objects';
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const before: readonly User[] = [{ id: 1, name: 'Ada' }];
+const after: readonly User[] = [{ id: 1, name: 'Grace' }];
+
+const result = diff(before, after, 'id', {
+  updatedValues: diff.updatedValues.both,
+});
+
+// Inferred as [User, User][]
+result.updated;
+```
+
+The identity field must be a key of the item type, and custom comparison
+functions receive inferred item parameters. Public result and option types are
+available as named type imports when an explicit annotation is useful.
+
 ## License
 
 MIT
