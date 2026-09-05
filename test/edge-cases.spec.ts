@@ -1,5 +1,4 @@
-import expect from 'expect.js';
-import should from 'should';
+import { describe, expect, it } from 'vitest';
 import diff, { UpdatedValues } from '../lib';
 import { formatUpdated } from '../lib/format-updated';
 
@@ -16,10 +15,10 @@ describe('edge cases', function () {
 
     const results = diff(first, second);
 
-    should(results.added).be.eql([]);
-    should(results.removed).be.eql([]);
-    should(results.updated).be.eql([{ id: 0, value: 'after' }]);
-    should(results.same).be.eql([{ id: '', value: 'unchanged' }]);
+    expect(results.added).toEqual([]);
+    expect(results.removed).toEqual([]);
+    expect(results.updated).toEqual([{ id: 0, value: 'after' }]);
+    expect(results.same).toEqual([{ id: '', value: 'unchanged' }]);
   });
 
   it('returns an empty deep diff when a custom comparator forces equal values to be updated', function () {
@@ -29,12 +28,12 @@ describe('edge cases', function () {
       updatedValues: diff.updatedValues.bothWithDeepDiff,
     });
 
-    should(results.updated).be.eql([[item, { ...item }, []]]);
+    expect(results.updated).toEqual([[item, { ...item }, []]]);
   });
 
   it('defensively rejects an unknown update formatting mode', function () {
     expect(() => formatUpdated([], {}, 'id', 999 as UpdatedValues))
-      .to.throwError(/without taking a branch/);
+      .toThrowError(/without taking a branch/);
   });
 });
 

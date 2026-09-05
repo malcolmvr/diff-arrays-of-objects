@@ -46,8 +46,6 @@
     "@typescript-eslint/parser": "^7.18.0",
     "@vitest/coverage-v8": "^2.1.0",
     "eslint": "^8.57.0",
-    "expect.js": "^0.3.1",
-    "should": "^13.2.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "vitest": "^2.1.0"

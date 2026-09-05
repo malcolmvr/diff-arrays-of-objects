@@ -1,4 +1,4 @@
-import should from 'should';
+import { describe, expect, it } from 'vitest';
 import diff from '../lib';
 
 describe('custom compare function', function () {
@@ -9,10 +9,10 @@ describe('custom compare function', function () {
       return o1.letter === o2.letter;
     };
     const results = diff(first, second, 'id', { compareFunction });
-    should(results.added).be.deepEqual([]);
-    should(results.removed).be.deepEqual([]);
-    should(results.updated).be.deepEqual([]);
-    should(results.same).be.deepEqual([{ id: 1, letter: 'a', ignored: 'y' }]);
+    expect(results.added).toEqual([]);
+    expect(results.removed).toEqual([]);
+    expect(results.updated).toEqual([]);
+    expect(results.same).toEqual([{ id: 1, letter: 'a', ignored: 'y' }]);
   });
 });
 

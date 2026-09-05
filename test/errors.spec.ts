@@ -1,5 +1,6 @@
 import diff from '../lib';
-import expect from 'expect.js';
+import { describe, expect, it } from 'vitest';
+
 
 describe('diff-arrays-of-objects', function () {
   it('should send an error when the first array is not an array', () => {
@@ -7,7 +8,7 @@ describe('diff-arrays-of-objects', function () {
       const first = null;
       const second = [{ id: 1, letter: 'a' }];
       diff(first, second, 'id');
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should send an error when the second array is not an array', () => {
@@ -15,7 +16,7 @@ describe('diff-arrays-of-objects', function () {
       const first = [{ id: 1, letter: 'a' }];
       const second = null;
       diff(first, second, 'id');
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should send an error when the idField is empty', () => {
@@ -23,7 +24,7 @@ describe('diff-arrays-of-objects', function () {
       const first = [{ id: 1, letter: 'a' }];
       const second = [{ id: 1, letter: 'b' }];
       diff(first, second, null);
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should send an error when the options is not an object', () => {
@@ -31,7 +32,7 @@ describe('diff-arrays-of-objects', function () {
       const first = [{ id: 1, letter: 'a' }];
       const second = [{ id: 1, letter: 'b' }];
       diff(first, second, 'id', null);
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should send an error when the options.updatedValues is not a valid value', () => {
@@ -40,11 +41,11 @@ describe('diff-arrays-of-objects', function () {
     expect(() => {
       // @ts-expect-error Exercising runtime validation with an invalid enum.
       diff(first, second, 'id', { updatedValues: -1 });
-    }).to.throwError();
+    }).toThrowError();
     expect(() => {
       // @ts-expect-error Exercising runtime validation with an invalid enum.
       diff(first, second, 'id', { updatedValues: 10 });
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should send an error when the options.compareFunction is not a valid function', () => {
@@ -53,13 +54,13 @@ describe('diff-arrays-of-objects', function () {
       const second = [{ id: 1, letter: 'b' }];
       // @ts-expect-error Exercising runtime validation with a non-function.
       diff(first, second, 'id', { compareFunction: -1 });
-    }).to.throwError();
+    }).toThrowError();
   });
 
   it('should use all the default parameter values', () => {
     expect(() => {
       diff();
-    }).not.to.throwError();
+    }).not.toThrowError();
   });
 });
 
