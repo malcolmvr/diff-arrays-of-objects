@@ -1,4 +1,4 @@
-import { realTypeOf } from './utils';
+import { realTypeOf } from './utils.js';
 
 function hashString (value: string): number {
   let hash = 0;

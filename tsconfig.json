@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "commonjs",
-    "lib": ["ES2019"],
+    "module": "NodeNext",
+    "lib": ["ES2022"],
     "allowJs": false,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "outDir": "dist",
     "rootDir": "lib",
     "noImplicitAny": true,
@@ -17,6 +17,6 @@
     "exactOptionalPropertyTypes": true,
     "types": ["node"]
   },
-  "include": ["lib/**/*.ts"],
+  "include": ["lib/**/*.ts", "lib/**/*.mts"],
   "exclude": ["node_modules", "dist", "coverage"]
 }

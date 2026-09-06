@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import diff from '../lib';
+import diff from '../lib/index.js';
 
 describe('custom compare function', function () {
   it('should be able to use a custom compare function', function () {

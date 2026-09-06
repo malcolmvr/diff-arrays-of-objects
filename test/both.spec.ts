@@ -1,4 +1,4 @@
-import diff from '../lib';
+import diff from '../lib/index.js';
 import { describe, it, expect } from 'vitest';
 
 describe('both', function () {

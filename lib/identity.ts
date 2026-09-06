@@ -8,9 +8,9 @@ export function indexById<T extends object> (
   items: readonly T[],
   idField: string,
 ): Record<string, T> {
-  return Object.fromEntries(
-    items.map(item => [String(getId(idField)(item)), item]),
-  );
+  const index: Record<string, T> = Object.create(null);
+  for (const item of items) index[String(getId(idField)(item))] = item;
+  return index;
 }
 
 /** Computes the items in `first` whose ids are absent from `second`. */

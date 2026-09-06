@@ -1,10 +1,20 @@
 {
-  "name": "diff-arrays-of-objects",
+  "name": "@wvanderp/diff-arrays-of-objects",
   "description": "Compare two arrays of objects, finding added, removed, updated and identical objects. Details the differences between updated objects.",
-  "homepage": "https://github.com/malcolmvr/diff-arrays-of-objects",
-  "version": "1.1.9",
-  "main": "dist",
+  "homepage": "https://github.com/wvanderp/diff-arrays-of-objects",
+  "version": "1.0.0",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./dist/deep-diff": "./dist/deep-diff/index.js",
+    "./dist/*.js": "./dist/*.js",
+    "./dist/*": "./dist/*.js"
+  },
   "author": {
     "email": "malcolm@van.raalte.ca",
     "name": "Malcolm van Raalte",
@@ -19,10 +29,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/malcolmvr/diff-arrays-of-objects.git"
+    "url": "git+https://github.com/wvanderp/diff-arrays-of-objects.git"
   },
   "bugs": {
-    "url": "https://github.com/malcolmvr/diff-arrays-of-objects/issues"
+    "url": "https://github.com/wvanderp/diff-arrays-of-objects/issues"
   },
   "keywords": [
     "added",
@@ -52,19 +62,27 @@
     "vitest": "^2.1.0"
   },
   "engines": {
-    "node": ">= 8"
+    "node": ">=22.13.0"
   },
   "files": [
     "dist"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "clean": "pnpm dlx rimraf node_modules",
-    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
-    "pretest": "pnpm run lint && pnpm run typecheck && pnpm run build",
-    "prepublishOnly": "pnpm run build",
-    "test": "vitest run --coverage"
-  }
+    "pretest": "npm run build && npm run lint && npm run typecheck",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test",
+    "test": "vitest run --coverage && npm run test:package",
+    "test:package": "node test/package-smoke.mjs",
+    "prebench": "npm run build",
+    "bench": "vitest bench --run"
+  },
+  "type": "module"
 }

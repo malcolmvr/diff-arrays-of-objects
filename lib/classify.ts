@@ -1,5 +1,5 @@
-import { groupBy } from 'lodash';
-import { getId } from './identity';
+import groupBy from 'lodash/groupBy.js';
+import { getId } from './identity.js';
 
 export interface Classification<T> {
   added: T[];

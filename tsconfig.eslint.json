@@ -7,7 +7,10 @@
   },
   "include": [
     "lib/**/*.ts",
+    "lib/**/*.mts",
     "test/**/*.ts",
+    "test/**/*.mts",
+    "test/**/*.mjs",
     "*.ts",
     "*.mjs"
   ],

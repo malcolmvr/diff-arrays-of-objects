@@ -1,6 +1,6 @@
-import { Diff, PathSegment, validKinds } from './changes';
-import { observableDiff } from './calculate';
-import { arrayRemove } from './utils';
+import { Diff, PathSegment, validKinds } from './changes.js';
+import { observableDiff } from './calculate.js';
+import { arrayRemove } from './utils.js';
 
 type Container = Record<PropertyKey, unknown> | unknown[];
 
@@ -15,15 +15,24 @@ function isContainer (value: unknown): value is Container {
 }
 
 function get (value: Container, key: PathSegment): unknown {
-  return Reflect.get(value, key);
+  assertSafeKey(key);
+  return Object.hasOwn(value, key) ? Reflect.get(value, key) : undefined;
 }
 
 function set (value: Container, key: PathSegment, item: unknown): void {
+  assertSafeKey(key);
   Reflect.set(value, key, item);
 }
 
 function remove (value: Container, key: PathSegment): void {
+  assertSafeKey(key);
   Reflect.deleteProperty(value, key);
+}
+
+function assertSafeKey (key: PathSegment): void {
+  if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    throw new Error(`Unsafe change path segment: ${key}`);
+  }
 }
 
 function descend (

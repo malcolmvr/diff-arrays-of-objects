@@ -1,4 +1,4 @@
-import diff from '../lib';
+import diff from '../lib/index.js';
 import { describe, expect, it } from 'vitest';
 
 describe('diff-arrays-of-objects', function () {

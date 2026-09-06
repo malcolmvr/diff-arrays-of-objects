@@ -1,4 +1,8 @@
-import { isArray, isEqual, isFunction, isObject, isString } from 'lodash';
+import isArray from 'lodash/isArray.js';
+import isEqual from 'lodash/isEqual.js';
+import isFunction from 'lodash/isFunction.js';
+import isObject from 'lodash/isObject.js';
+import isString from 'lodash/isString.js';
 
 /** Controls which values are returned for updated records. */
 export enum UpdatedValues {

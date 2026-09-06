@@ -1,7 +1,7 @@
-import deepDiff from './deep-diff';
-import type { Diff } from './deep-diff/changes';
-import { getId } from './identity';
-import { UpdatedValues } from './resolve-options';
+import deepDiff from './deep-diff/index.js';
+import type { Diff } from './deep-diff/changes.js';
+import { getId } from './identity.js';
+import { UpdatedValues } from './resolve-options.js';
 
 export type UpdatedEntry<T, Mode extends UpdatedValues> =
   Mode extends UpdatedValues.both

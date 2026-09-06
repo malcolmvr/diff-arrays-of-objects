@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import deep from '../lib/deep-diff';
-import type { PreFilterObject } from '../lib/deep-diff/calculate';
-import { arrayRemove } from '../lib/deep-diff/utils';
+import deep from '../lib/deep-diff/index.js';
+import type { PreFilterObject } from '../lib/deep-diff/calculate.js';
+import { arrayRemove } from '../lib/deep-diff/utils.js';
 
 describe('deep-diff compatibility helpers', () => {
   it('applies every change kind, including nested array changes', () => {

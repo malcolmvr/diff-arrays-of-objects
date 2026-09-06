@@ -1,20 +1,20 @@
-import { classify } from './classify';
-import { formatUpdated, UpdatedEntry } from './format-updated';
-import { findRemoved, indexById } from './identity';
+import { classify } from './classify.js';
+import { formatUpdated, UpdatedEntry } from './format-updated.js';
+import { findRemoved, indexById } from './identity.js';
 import {
   DEFAULT_ID_FIELD,
   Options,
   resolveOptions,
   UpdatedValues,
-} from './resolve-options';
+} from './resolve-options.js';
 
 export {
   CompareFunction,
   Options,
   ResolvedOptions,
   UpdatedValues,
-} from './resolve-options';
-export type { Diff as DeepDiffChange } from './deep-diff/changes';
+} from './resolve-options.js';
+export type { Diff as DeepDiffChange } from './deep-diff/changes.js';
 
 export interface DiffResult<
   T,
@@ -37,14 +37,32 @@ export type DiffResultDeepDiff<T> = DiffResult<T, UpdatedValues.bothWithDeepDiff
  */
 function diff<
   T extends object,
-  Mode extends UpdatedValues = UpdatedValues.second,
+  Mode extends UpdatedValues,
 > (
+  first: readonly T[] | undefined,
+  second: readonly T[] | undefined,
+  idField: (keyof T & string) | undefined,
+  options: Options<T, Mode> & { updatedValues: Mode },
+): DiffResult<T, Mode>;
+function diff<T extends object> (
+  first?: readonly T[],
+  second?: readonly T[],
+  idField?: keyof T & string,
+  options?: Options<T, UpdatedValues.second>,
+): DiffResult<T, UpdatedValues.second>;
+function diff<T extends object> (
+  first: readonly T[] | undefined,
+  second: readonly T[] | undefined,
+  idField: (keyof T & string) | undefined,
+  options: Options<T>,
+): DiffResult<T>;
+function diff<T extends object> (
   first: readonly T[] = [],
   second: readonly T[] = [],
   idField: keyof T & string = DEFAULT_ID_FIELD as keyof T & string,
-  options: Options<T, Mode> = {},
-): DiffResult<T, Mode> {
-  const opts = resolveOptions<T, Mode>(first, second, idField, options);
+  options: Options<T> = {},
+): DiffResult<T> {
+  const opts = resolveOptions<T, UpdatedValues>(first, second, idField, options);
   const key = idField;
 
   const firstIndex = indexById(first, key);
@@ -72,6 +90,3 @@ const diffWithUpdatedValues = Object.assign(diff, {
 });
 
 export default diffWithUpdatedValues;
-module.exports = diffWithUpdatedValues;
-module.exports.default = diffWithUpdatedValues;
-module.exports.updatedValues = UpdatedValues;

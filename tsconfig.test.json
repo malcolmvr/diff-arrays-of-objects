@@ -5,6 +5,6 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "include": ["lib/**/*.ts", "lib/**/*.mts", "test/**/*.ts", "test/**/*.mts"],
   "exclude": ["test/deep-diff.spec.ts"]
 }

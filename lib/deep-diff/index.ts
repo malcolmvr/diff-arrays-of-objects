@@ -1,13 +1,13 @@
-import { applyChange, applyDiff, revertChange } from './apply';
+import { applyChange, applyDiff, revertChange } from './apply.js';
 import {
   accumulateDiff,
   accumulateOrderIndependentDiff,
   observableDiff,
   orderIndependentDeepDiff,
   PreFilter,
-} from './calculate';
-import { Diff } from './changes';
-import { getOrderIndependentHash } from './hash';
+} from './calculate.js';
+import { Diff } from './changes.js';
+import { getOrderIndependentHash } from './hash.js';
 
 export interface DeepDiffApi {
   (

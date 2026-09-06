@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import diff, { UpdatedValues } from '../lib';
-import { formatUpdated } from '../lib/format-updated';
+import diff, { UpdatedValues } from '../lib/index.js';
+import { formatUpdated } from '../lib/format-updated.js';
 
 describe('edge cases', function () {
+  it.each(['constructor', 'toString', '__proto__', 'hasOwnProperty'])('handles the ID %s', (id) => {
+    const before = { id, value: 'before' };
+    const after = { id, value: 'after' };
+    expect(diff([], [after]).added).toEqual([after]);
+    expect(diff([before], []).removed).toEqual([before]);
+    expect(diff([before], [before]).same).toEqual([before]);
+    expect(diff([before], [after], 'id', { updatedValues: UpdatedValues.both }).updated)
+      .toEqual([[before, after]]);
+  });
+
   it('matches objects with falsey identifiers', function () {
     const first = [
       { id: 0, value: 'before' },

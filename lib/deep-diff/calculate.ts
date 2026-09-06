@@ -1,6 +1,7 @@
-import { Diff, DiffArray, DiffDeleted, DiffEdit, DiffNew, PathSegment } from './changes';
-import { getOrderIndependentHash } from './hash';
-import { realTypeOf } from './utils';
+import isEqual from 'lodash/isEqual.js';
+import { Diff, DiffArray, DiffDeleted, DiffEdit, DiffNew, PathSegment } from './changes.js';
+import { getOrderIndependentHash } from './hash.js';
+import { realTypeOf } from './utils.js';
 
 export type PreFilterFunction = (
   path: readonly PathSegment[],
@@ -67,6 +68,25 @@ function compareArrays (
   if (options.orderIndependent) {
     lhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
     rhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+
+    // Hashes only group candidates: distinct values can share a hash. Align
+    // equal values within each group before comparing them by array index.
+    for (let index = 0; index < Math.min(lhs.length, rhs.length); index++) {
+      const hash = getOrderIndependentHash(lhs[index]);
+      for (let candidate = index; candidate < rhs.length
+        && getOrderIndependentHash(rhs[candidate]) === hash; candidate++) {
+        const changes: Diff[] = [];
+        walk(lhs[index], rhs[candidate], {
+          ...options,
+          changes,
+          prefilter: undefined,
+        }, index);
+        if (changes.length === 0) {
+          [rhs[index], rhs[candidate]] = [rhs[candidate], rhs[index]];
+          break;
+        }
+      }
+    }
   }
 
   let rightIndex = rhs.length - 1;
@@ -103,7 +123,7 @@ function compareObjects (
   const remainingRightKeys = new Set(Object.keys(right));
 
   Object.keys(left).forEach((key) => {
-    walk(left[key], right[key], {
+    walk(left[key], ownsKey(right, key) ? right[key] : undefined, {
       ...options,
       path: [...options.path],
     }, key);
@@ -136,8 +156,10 @@ function walk (
   }
 
   if (lhs instanceof RegExp && rhs instanceof RegExp) {
-    lhs = lhs.toString();
-    rhs = rhs.toString();
+    if (lhs.toString() !== rhs.toString()) {
+      options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+    }
+    return;
   }
 
   const parent = options.stack[options.stack.length - 1];
@@ -160,6 +182,16 @@ function walk (
   }
   if (lhs instanceof Date && rhs instanceof Date) {
     if (lhs.getTime() !== rhs.getTime()) {
+      options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+    }
+    return;
+  }
+
+  // Collection entries are not enumerable properties. Represent changes as a
+  // replacement so applying and reverting them preserves their native type.
+  if (lhs instanceof Map || rhs instanceof Map
+    || lhs instanceof Set || rhs instanceof Set) {
+    if (!isEqual(lhs, rhs)) {
       options.changes.push(new DiffEdit(currentPath, lhs, rhs));
     }
     return;

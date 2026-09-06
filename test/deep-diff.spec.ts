@@ -1,4 +1,4 @@
-import deepDiff from '../lib/deep-diff';
+import deepDiff from '../lib/deep-diff/index.js';
 import { describe, expect, it } from 'vitest';
 
 
@@ -470,8 +470,8 @@ let deep = deepDiff;
 
         expect(diff[0].kind).toBe('E');
         expect(diff[0].path).toBeFalsy();
-        expect(diff[0].lhs).toBe('/foo/');
-        expect(diff[0].rhs).toBe('/foo/i');
+        expect(diff[0].lhs).toBe(lhs);
+        expect(diff[0].rhs).toBe(rhs);
       });
     });
 

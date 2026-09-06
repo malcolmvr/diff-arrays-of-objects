@@ -1,5 +1,10 @@
 # deep-diff
 
+This is historical upstream documentation for the change format and compatibility
+helpers bundled in this fork. Installation instructions below refer to the
+separate upstream package, not this fork. Here, changed Maps and Sets use
+whole-value edits, and patch helpers reject unsafe prototype-related paths.
+
 [![CircleCI](https://circleci.com/gh/flitbit/diff.svg?style=svg)](https://circleci.com/gh/flitbit/diff)
 
 [![NPM](https://nodei.co/npm/deep-diff.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deep-diff/)

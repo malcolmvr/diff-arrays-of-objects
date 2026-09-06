@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import diff from '../lib';
+import diff from '../lib/index.js';
 
 describe('second', function () {
   it('just one the same', function () {
